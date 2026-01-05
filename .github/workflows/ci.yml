@@ -38,14 +38,3 @@ jobs:
       run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/php-demo:${{ github.sha }}
         docker push ${{ secrets.DOCKER_USERNAME }}/php-demo:latest
-
-    - name: Update GitOps Repo
-      run: |
-        git clone https://github.com/IS2022U/gitops-k8s.git
-        cd gitops-k8s/php
-        sed -i "s|image: .*|image: ${{ secrets.DOCKER_USERNAME }}/php-demo:${{ github.sha }}|g" deployment.yaml
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git add deployment.yaml
-        git commit -m "Update image to ${{ github.sha }}"
-        git push https://${{ secrets.GH_TOKEN }}@github.com/IS2022U/gitops-k8s.git main
