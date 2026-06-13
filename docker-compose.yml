@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php-demo-app
+    ports:
+      - "8080:80"          # Access via http://localhost:8080
+    volumes:
+      - ./index.php:/var/www/html/index.php   # Live-reload during development
+      - ./health.php:/var/www/html/health.php
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health.php"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# Useful commands:
+#   docker compose up -d        → start in background
+#   docker compose logs -f      → follow logs
+#   docker compose down         → stop and remove containers
+#   docker compose build        → rebuild image after Dockerfile changes
