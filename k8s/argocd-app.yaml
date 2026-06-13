@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: php-demo-app
+  namespace: argocd        # ArgoCD must be installed in the 'argocd' namespace
+spec:
+  project: default
+
+  # Source: where ArgoCD reads the desired state from (this Git repo)
+  source:
+    repoURL: https://github.com/IS2022U/php-demo-app.git
+    targetRevision: HEAD
+    path: k8s              # ArgoCD watches the k8s/ folder for manifest changes
+
+  # Destination: which cluster and namespace to deploy into
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  # Sync policy: automatically sync when Git changes are detected
+  syncPolicy:
+    automated:
+      prune: true          # Remove resources deleted from Git
+      selfHeal: true       # Re-apply if someone manually changes the cluster
+    syncOptions:
+      - CreateNamespace=true

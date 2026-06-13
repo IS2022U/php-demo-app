@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-demo-app
+  namespace: default
+  labels:
+    app: php-demo-app
+    version: "2.0"
+spec:
+  # Run 2 replicas for high availability
+  replicas: 2
+  selector:
+    matchLabels:
+      app: php-demo-app
+  template:
+    metadata:
+      labels:
+        app: php-demo-app
+    spec:
+      containers:
+        - name: php-demo-app
+          # This image tag is automatically updated by the CI/CD pipeline
+          image: YOUR_DOCKERHUB_USERNAME/php-demo-app:latest
+          ports:
+            - containerPort: 80
+
+          # Liveness probe: restart the container if this fails
+          livenessProbe:
+            httpGet:
+              path: /health.php
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+
+          # Readiness probe: only send traffic when this passes
+          readinessProbe:
+            httpGet:
+              path: /health.php
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Resource limits — good practice for any production deployment
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+
+  # Rolling update strategy — zero downtime deployments
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
